@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from app.schemas.user import SensitiveUserSchema, NonSensitiveUserSchema
-from app.controller.users import add_new_user, query_users
+from app.schemas.user import SensitiveUserSchema, NonSensitiveUserSchema, UserRegisterSchema, UserLoginSchema
+from app.controller.users import add_new_user, query_users, login
 
 router = APIRouter()
 
@@ -22,3 +22,16 @@ async def get_all_users():
     if not response:
         raise HTTPException(status_code=404, detail="User not found")
     return response
+
+@router.post("/register", tags=["Users"], description="Register a new user")
+async def register_user(user: UserRegisterSchema):
+    response = add_new_user(user)
+    return response
+
+@router.post("/login", tags=["Users"], description="Login a user")
+async def login_user(user: UserLoginSchema):
+    try:
+        response = login(user)
+        return response
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)

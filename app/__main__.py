@@ -4,7 +4,7 @@ def main():
     """ Entry point """
     uvicorn.run(
         "app.application:get_app",
-        workers=1,
+        workers=2,
         log_level="debug",
         factory=True,
         reload=True,

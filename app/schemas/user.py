@@ -12,7 +12,7 @@ class SensitiveUserSchema(BaseModel):
     is_verified: bool
 
     class Config:
-        orm_mode = True
+        # orm_mode = True
         from_attributes=True
 
 class NonSensitiveUserSchema(BaseModel):
@@ -23,7 +23,7 @@ class NonSensitiveUserSchema(BaseModel):
     is_active: bool
 
     class Config:
-        orm_mode = True
+        # orm_mode = True
         from_attributes=True
 
 class UserRegisterSchema(BaseModel):
@@ -34,6 +34,11 @@ class UserRegisterSchema(BaseModel):
     first_name: str | None
     last_name: str | None
 
+    class Config:
+        # orm_mode = True
+        from_attributes=True
+
 class UserLoginSchema(BaseModel):
-    username: str
+    username: str | None
+    email: str | None
     password: str
