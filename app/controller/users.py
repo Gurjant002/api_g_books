@@ -1,5 +1,5 @@
 from app.models.users import User as UserModel
-from app.routers.schemas.user import SensitiveUserSchema, NonSensitiveUserSchema
+from app.schemas.user import SensitiveUserSchema, NonSensitiveUserSchema
 from app.config.database import Session
 
 def add_new_user(user: SensitiveUserSchema) -> NonSensitiveUserSchema:

@@ -1,5 +1,5 @@
 from app.models.books import Book as BookModel
-from app.routers.schemas.book import BookSchema, ReturnBookSchema
+from app.schemas.book import BookSchema, ReturnBookSchema
 from app.config.database import Session
 
 def add_new_book(book: BookSchema) -> BookSchema:

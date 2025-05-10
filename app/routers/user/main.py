@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.routers.schemas.user import SensitiveUserSchema, NonSensitiveUserSchema
+from app.schemas.user import SensitiveUserSchema, NonSensitiveUserSchema
 from app.controller.users import add_new_user, query_users
 
 router = APIRouter()

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.routers.schemas.book import BookSchema, ReturnBookSchema
+from app.schemas.book import BookSchema, ReturnBookSchema
 from app.controller.books import add_new_book, query_books
 
 router = APIRouter()
