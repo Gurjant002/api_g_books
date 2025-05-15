@@ -12,4 +12,5 @@ class Book(Base):
     pages = Column(Integer, nullable=True)
     cover = Column(String, nullable=True)
     language = Column(String, nullable=True)
+    description = Column(String, nullable=True)
 

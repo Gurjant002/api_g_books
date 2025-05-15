@@ -12,7 +12,7 @@ def add_new_book(book: BookSchema) -> BookSchema:
   response = BookSchema.from_orm(new_book)
   return response
 
-def query_books(id: int) -> list[BookSchema] | ReturnBookSchema:
+def query_books(id: int = None) -> list[BookSchema] | ReturnBookSchema:
   db = Session()
   if id:
     book = db.query(BookModel).filter(BookModel.id == id).first()

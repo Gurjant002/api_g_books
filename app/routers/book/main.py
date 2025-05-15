@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException
+import os
+from fastapi import APIRouter, HTTPException, UploadFile
+import shutil
 from app.schemas.book import BookSchema, ReturnBookSchema
 from app.controller.books import add_new_book, query_books
 
@@ -20,3 +22,21 @@ async def get_book(book_id: int):
   if not response:
     raise HTTPException(status_code=404, detail="Book not found")
   return response
+
+@router.get("/hello")
+async def hello():
+  return {"message": "Hello World"}
+
+@router.post("/upload-cover", tags=["Books"], description="Upload a book cover")
+async def upload_cover(file: UploadFile, description: str = None):
+  # Here you would typically save the file to a directory or cloud storage
+  # For demonstration, we'll just return the filename and content type
+  os.makedirs("static", exist_ok=True)
+  file_path = f"static/{file.filename}"
+  with open(file_path, "wb") as buffer:
+    shutil.copyfileobj(file.file, buffer)
+    
+  return {
+    "filename": file.filename,
+    "content_type": file.content_type
+  }
