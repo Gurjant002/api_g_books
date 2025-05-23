@@ -40,3 +40,9 @@ async def upload_cover(file: UploadFile, description: str = None):
     "filename": file.filename,
     "content_type": file.content_type
   }
+
+@router.get("/book-cover/{book_id}", tags=["Books"], description="Get book cover")
+async def get_book_cover(book_id: str):
+  # This function would typically query the database for the book cover path
+  # For demonstration, we'll just return a static path
+  return f"static/book_covers/{book_id}.jpg"
