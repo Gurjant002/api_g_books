@@ -1,5 +1,5 @@
 from app.config.database import Base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 
 class Book(Base):
     __tablename__ = 'books'
@@ -13,4 +13,5 @@ class Book(Base):
     cover = Column(String, nullable=True)
     language = Column(String, nullable=True)
     description = Column(String, nullable=True)
+    available = Column(Boolean, default=True)  # Default to 1 for availability
 

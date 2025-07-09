@@ -8,6 +8,7 @@ class BookSchema(BaseModel):
     pages: int | None
     cover: str | None
     language: str | None
+    available: bool = True  # Default to True for availability
 
     class Config:
         # orm_mode = True
@@ -23,6 +24,7 @@ class ReturnBookSchema(BaseModel):
     pages: int | None
     cover: str | None
     language: str | None
+    available: bool = True  # Default to True for availability
 
     class Config:
         # orm_mode = True

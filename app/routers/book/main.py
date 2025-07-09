@@ -8,8 +8,20 @@ router = APIRouter()
 
 @router.post("/add-book", tags=["Books"], response_model=BookSchema, description="Add a new book")
 async def new_book(book: BookSchema):
+  if not book:
+    raise HTTPException(status_code=400, detail="Book data is required")
   response = add_new_book(book)
   return response
+
+@router.post("/add-books", tags=["Books"], response_model=BookSchema | str, description="Add a new book")
+async def new_books(books: list[BookSchema]):
+  try:
+    if books is None or len(books) == 0:
+      raise HTTPException(status_code=400, detail="Book data is required")
+    response = add_new_book(books=books)
+    return response if isinstance(response, BookSchema) else "Books added successfully"
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/get-all-books", tags=["Books"], response_model=list[ReturnBookSchema], description="Get all books")
 async def get_all_books():
