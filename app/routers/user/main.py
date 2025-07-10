@@ -25,8 +25,13 @@ async def get_all_users():
 
 @router.post("/register", tags=["Users"], description="Register a new user")
 async def register_user(user: UserRegisterSchema):
-    response = add_new_user(user)
-    return response
+    try:
+        response = add_new_user(user)
+        return response
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/login", tags=["Users"], description="Login a user")
 async def login_user(user: UserLoginSchema):

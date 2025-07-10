@@ -15,4 +15,5 @@ class User(Base):
     is_superuser = Column(Integer, default=0)
     is_verified = Column(Integer, default=0)
     date_joined = Column(String(length=255), nullable=False, default=datetime.utcnow().isoformat()+ 'Z')
+    birth_date = Column(String(length=255), nullable=True)
     

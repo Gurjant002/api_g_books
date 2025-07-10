@@ -10,6 +10,8 @@ class SensitiveUserSchema(BaseModel):
     is_active: bool
     is_superuser: bool
     is_verified: bool
+    date_joined: str | None
+    birth_date: str | None
 
     class Config:
         # orm_mode = True
@@ -30,9 +32,11 @@ class UserRegisterSchema(BaseModel):
     username: str
     email: str
     password: str
-    password_confirm: str
+    confirm_password: str
     first_name: str | None
     last_name: str | None
+    date_joined: str | None
+    birth_date: str | None
 
     class Config:
         # orm_mode = True
