@@ -22,7 +22,7 @@ def add_new_book(book: BookSchema = None, books: list[BookSchema] = None) -> Boo
     response = "Books added successfully"
   else:
     raise ValueError("Either book or books must be provided")
-    return response
+  return response
 
 def query_books(id: int = None) -> list[BookSchema] | ReturnBookSchema:
   db = Session()
@@ -33,6 +33,7 @@ def query_books(id: int = None) -> list[BookSchema] | ReturnBookSchema:
       return None
     response = ReturnBookSchema.from_orm(book)
     return response
+  
   books = db.query(BookModel).all()
   db.close()
   response = [ReturnBookSchema.from_orm(book) for book in books]

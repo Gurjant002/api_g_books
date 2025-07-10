@@ -25,8 +25,12 @@ async def new_books(books: list[BookSchema]):
 
 @router.get("/get-all-books", tags=["Books"], response_model=list[ReturnBookSchema], description="Get all books")
 async def get_all_books():
-  response = query_books()
-  return response
+  try:
+    response = query_books()
+    return response
+  except Exception as e:
+    print(f"Error fetching books: {e}")
+    raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/get-book/{book_id}", tags=["Books"], response_model=ReturnBookSchema, description="Get a book by ID")
 async def get_book(book_id: int):

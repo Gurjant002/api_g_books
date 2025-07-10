@@ -9,6 +9,8 @@ class BookSchema(BaseModel):
     cover: str | None
     language: str | None
     available: bool = True  # Default to True for availability
+    owner_id: int | None = None  # Optional owner ID for book ownership
+    date_added: str | None = None  # Optional date added for the book
 
     class Config:
         # orm_mode = True
@@ -24,7 +26,9 @@ class ReturnBookSchema(BaseModel):
     pages: int | None
     cover: str | None
     language: str | None
-    available: bool = True  # Default to True for availability
+    available: bool | None   # Default to True for availability
+    owner_id: int | None = None  # Optional owner ID for book ownership
+    date_added: str | None = None  # Optional date added for the book
 
     class Config:
         # orm_mode = True
