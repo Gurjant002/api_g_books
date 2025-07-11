@@ -1,8 +1,14 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError
+from sqlalchemy.orm import Session as SQLSession
+
+from app.config.database import get_db
 from app.schemas.user import SensitiveUserSchema, NonSensitiveUserSchema, UserRegisterSchema, UserLoginSchema
 from app.controller.users import add_new_user, query_users, login
 
 router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 @router.post("/add-user", tags=["Users"], response_model=SensitiveUserSchema, description="Add a new user")
 async def new_user(user: SensitiveUserSchema):
@@ -34,9 +40,19 @@ async def register_user(user: UserRegisterSchema):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/login", tags=["Users"], description="Login a user")
-async def login_user(user: UserLoginSchema):
+async def login_user(user: OAuth2PasswordRequestForm = Depends(), db: SQLSession = Depends(get_db)):
     try:
-        response = login(user)
+        response = login(user, db)
         return response
     except HTTPException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/tokenvalidate", tags=["Users"], description="Validate a token")
+async def validate_token(token: str):
+    try:
+        response = token_validator(token)
+        return response
+    except JWTError:
+        return {"status": "invalid"}
