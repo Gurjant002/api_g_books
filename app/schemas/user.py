@@ -18,6 +18,7 @@ class SensitiveUserSchema(BaseModel):
         from_attributes=True
 
 class NonSensitiveUserSchema(BaseModel):
+    id: int
     username: str
     email: str
     first_name: str | None

@@ -99,7 +99,7 @@ def login(user: OAuth2PasswordRequestForm, db: Session) -> NonSensitiveUserSchem
     )
     return token
 
-def query_users(id: int = None, sensitive: bool = False) -> list[NonSensitiveUserSchema] | list[SensitiveUserSchema] | NonSensitiveUserSchema | SensitiveUserSchema:
+def query_users(id: int = None, email: str = None, sensitive: bool = False) -> list[NonSensitiveUserSchema] | list[SensitiveUserSchema] | NonSensitiveUserSchema | SensitiveUserSchema:
     db = Session()
     if id is not None:
         user = db.query(UserModel).filter(UserModel.id == id).first()
@@ -111,6 +111,18 @@ def query_users(id: int = None, sensitive: bool = False) -> list[NonSensitiveUse
         else:
             response = SensitiveUserSchema.from_orm(user)
         return response
+
+    if email is not None:
+        user = db.query(UserModel).filter(UserModel.email == email).first()
+        db.close()
+        if not user:
+            return None
+        if not sensitive:
+            response = NonSensitiveUserSchema.from_orm(user)
+        else:
+            response = SensitiveUserSchema.from_orm(user)
+        return response
+
     users = db.query(UserModel).all()
     db.close()
     if not sensitive:
@@ -123,5 +135,7 @@ def token_validator(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return {"status": "valid", "payload": payload}
-    except JWTError:
-        return {"status": "invalid"}
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
