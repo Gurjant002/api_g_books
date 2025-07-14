@@ -28,7 +28,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-
 def add_new_user(user: SensitiveUserSchema | UserRegisterSchema ) -> NonSensitiveUserSchema:
     db = Session()
     if isinstance(user, UserRegisterSchema):
