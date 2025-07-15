@@ -21,9 +21,11 @@ class NonSensitiveUserSchema(BaseModel):
     id: int
     username: str
     email: str
-    first_name: str | None
-    last_name: str | None
+    first_name: str
+    last_name: str
     is_active: bool
+    date_joined: str
+    birth_date: str
 
     class Config:
         # orm_mode = True

@@ -35,6 +35,10 @@ def add_new_user(user: SensitiveUserSchema | UserRegisterSchema ) -> NonSensitiv
             db.close()
             raise HTTPException(status_code=400, detail="Invalid email address")
         
+        if db.query(UserModel).filter(UserModel.username == user.username).first():
+            db.close()
+            raise HTTPException(status_code=400, detail="Username already exists")
+
         if db.query(UserModel).filter(UserModel.email == user.email).first():
             db.close()
             raise HTTPException(status_code=400, detail="Email already exists")
@@ -98,7 +102,7 @@ def login(user: OAuth2PasswordRequestForm, db: Session) -> NonSensitiveUserSchem
     )
     return token
 
-def query_users(id: int = None, email: str = None, sensitive: bool = False) -> list[NonSensitiveUserSchema] | list[SensitiveUserSchema] | NonSensitiveUserSchema | SensitiveUserSchema:
+def query_users(id: int = None, token: str = None, email: str = None, sensitive: bool = False) -> list[NonSensitiveUserSchema] | list[SensitiveUserSchema] | NonSensitiveUserSchema | SensitiveUserSchema:
     db = Session()
     if id is not None:
         user = db.query(UserModel).filter(UserModel.id == id).first()
@@ -115,7 +119,19 @@ def query_users(id: int = None, email: str = None, sensitive: bool = False) -> l
         user = db.query(UserModel).filter(UserModel.email == email).first()
         db.close()
         if not user:
-            return None
+            raise HTTPException(status_code=404, detail="User not found")
+        if not sensitive:
+            response = NonSensitiveUserSchema.from_orm(user)
+        else:
+            response = SensitiveUserSchema.from_orm(user)
+        return response
+
+    if token is not None:
+        user_email = getEmailFromToken(token)
+        user = db.query(UserModel).filter(UserModel.email == user_email).first()
+        db.close()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
         if not sensitive:
             response = NonSensitiveUserSchema.from_orm(user)
         else:
@@ -129,6 +145,16 @@ def query_users(id: int = None, email: str = None, sensitive: bool = False) -> l
     else:
         response = [SensitiveUserSchema.from_orm(user) for user in users]
     return response
+
+def getEmailFromToken(token: str) -> str:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_email = payload.get("sub")
+        if user_email is None:
+            raise HTTPException(status_code=401, detail="Token inválido")
+        return user_email
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido")
 
 def token_validator(token: str) -> dict:
     try:

@@ -56,6 +56,16 @@ async def login_user(user: OAuth2PasswordRequestForm = Depends(), db: SQLSession
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/validate-token", tags=["Users"], description="Validate a token")
+async def validate_token(token: str = Depends(oauth2_scheme)):
+    try:
+        response = query_users(token=token)
+        return response
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/tokenvalidate", tags=["Users"], description="Validate a token")
 async def validate_token(token: str = Depends(oauth2_scheme)):
     try:
