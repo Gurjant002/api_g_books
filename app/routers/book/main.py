@@ -62,3 +62,4 @@ async def get_book_cover(book_id: str):
   # This function would typically query the database for the book cover path
   # For demonstration, we'll just return a static path
   return f"static/book_covers/{book_id}.jpg"
+

@@ -33,3 +33,22 @@ class ReturnBookSchema(BaseModel):
     class Config:
         # orm_mode = True
         from_attributes=True
+
+class ReadedBookSchema(BaseModel):
+    book_id: int
+    user_id: int
+    start: str | None = None  # Optional start date in ISO format
+    end: str | None = None  # Optional end date in ISO format
+
+    class Config:
+        # orm_mode = True
+        from_attributes=True
+
+class RentedBookSchema(BaseModel):
+    book_id: int
+    owner_id: int  # Assuming owner_id is an integer
+    date_added: str | None = None  # Optional date added in ISO format
+
+    class Config:
+        # orm_mode = True
+        from_attributes=True

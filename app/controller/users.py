@@ -1,18 +1,39 @@
 import re
 from datetime import datetime, timedelta
-from fastapi import HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session as SQLSession
 
 from app.config.authentication import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.models.users import User as UserModel
-from app.config.database import Session
+from app.config.database import Session, get_db
 from app.schemas.user import SensitiveUserSchema, NonSensitiveUserSchema, UserRegisterSchema, UserLoginSchema
 from app.schemas.token import Token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 email_regex = r"^([a-z]|[0-9]|\-|\_|\+|\.)+\@([a-z]|[0-9]){2,}\.[a-z]{2,}(\.[a-z]{2,})?$"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: SQLSession = Depends(get_db)
+) -> NonSensitiveUserSchema:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Token inválido")
+
+        user = db.query(UserModel).filter(UserModel.email == email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        return NonSensitiveUserSchema.from_orm(user)
+
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido")
+
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -74,7 +95,7 @@ def add_new_user(user: SensitiveUserSchema | UserRegisterSchema ) -> NonSensitiv
     response = SensitiveUserSchema.from_orm(new_user)
     return response
 
-def login(user: OAuth2PasswordRequestForm, db: Session) -> NonSensitiveUserSchema:
+def login(user: OAuth2PasswordRequestForm, db: SQLSession) -> NonSensitiveUserSchema:
     # db = Session()
     if user.username is None:
         db.close()

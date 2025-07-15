@@ -15,3 +15,19 @@ class Book(Base):
     description = Column(String, nullable=True)
     available = Column(Boolean, default=True)  # Default to 1 for availability
 
+class RentedBook(Base):
+    __tablename__ = 'rented_books'
+
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, nullable=False)
+    owner_id = Column(Integer, nullable=False)  # Assuming owner_id is an integer
+    date_added = Column(String, nullable=True)  # Assuming date_added is a string in ISO format
+
+class ReadedBook(Base):
+    __tablename__ = 'readed_books'
+
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False)  # Assuming user_id is an integer
+    start = Column(String, nullable=True)  # Assuming start is a string in ISO format
+    end = Column(String, nullable=True)  # Assuming end is a string in ISO format
