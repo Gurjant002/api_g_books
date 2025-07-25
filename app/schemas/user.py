@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from app.schemas.book import BookSchema
+from app.schemas.book import BookSchemaWithOwner
 
 class SensitiveUserSchema(BaseModel):
     id: int
@@ -53,8 +53,8 @@ class UserLoginSchema(BaseModel):
 
 class UserBookSchema(BaseModel):
     user: NonSensitiveUserSchema
-    readed_books: list[BookSchema]
-    rented_books: list[BookSchema]
+    readed_books: list[BookSchemaWithOwner]
+    rented_books: list[BookSchemaWithOwner]
 
     class Config:
         # orm_mode = True
