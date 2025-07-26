@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+from app.controller.users import query_users
 from app.models.books import Book as BookModel, BookOwner as BookOwnerModel, ReadedBook as ReadedBookModel
 from app.schemas.book import BookSchema, BookSchemaWithOwner, ReturnBookSchema, OwnerBookSchema
 from app.config.database import Session
@@ -69,13 +71,31 @@ def add_new_book(book: BookSchemaWithOwner = None, books: list[BookSchemaWithOwn
     raise ValueError("Either book or books must be provided")
   return response
 
-def query_books(id: int = None, token: str = None) -> list[BookSchemaWithOwner] | ReturnBookSchema:
+def query_books(id: int = None, email: str = None) -> list[BookSchemaWithOwner] | ReturnBookSchema:
   db = Session()
+  if email:
+    # Assuming email is used to filter books by owner
+    user = query_users(email=email, sensitive=False)
+    if not user:
+      db.close()
+      raise HTTPException(status_code=404, detail="User not found")
+    try:
+      books = db.query(BookModel).join(BookOwnerModel).filter(BookOwnerModel.owner_id == user.id).all()
+      response: list[BookSchemaWithOwner] = []
+      for book in books:
+          book_with_owner = BookSchemaWithOwner.from_orm(book)
+          book_with_owner.owner_id = user.id
+          response.append(book_with_owner)
+      return response
+    except Exception as e:
+      db.close()
+      raise HTTPException(status_code=500, detail=str(e))
+
   if id:
     book = db.query(BookModel).filter(BookModel.id == id).first()
     db.close()
     if not book:
-      return None
+      raise HTTPException(status_code=404, detail="Book not found")
     response = ReturnBookSchema.from_orm(book)
     return response
   

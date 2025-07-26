@@ -1,5 +1,6 @@
 from app.config.database import Base
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy.orm import relationship
 
 class Book(Base):
     """
@@ -38,6 +39,8 @@ class Book(Base):
     available = Column(Boolean, default=True)  # Default to 1 for availability
     date_added = Column(String, nullable=True)  # Assuming date_added is a string in ISO format
 
+    owners = relationship("BookOwner", back_populates="book")
+
 class BookOwner(Base):
     """
     Modelo de datos para la relación de propiedad entre usuarios y libros.
@@ -61,9 +64,12 @@ class BookOwner(Base):
     __tablename__ = 'book_owners'
 
     id = Column(Integer, primary_key=True, index=True)
-    book_id = Column(Integer, nullable=False)
-    owner_id = Column(Integer, nullable=False)  # Assuming owner_id is an integer
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Assuming owner_id is an integer
     date_added = Column(String, nullable=True)  # Assuming date_added is a string in ISO format
+
+    book = relationship("Book", back_populates="owners")
+    user = relationship("User", back_populates="owned_books")
 
 class ReadedBook(Base):
     """
@@ -88,7 +94,7 @@ class ReadedBook(Base):
     __tablename__ = 'readed_books'
 
     id = Column(Integer, primary_key=True, index=True)
-    book_id = Column(Integer, nullable=False)
-    user_id = Column(Integer, nullable=False)  # Assuming user_id is an integer
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Assuming user_id is an integer
     start = Column(String, nullable=True)  # Assuming start is a string in ISO format
     end = Column(String, nullable=True)  # Assuming end is a string in ISO format

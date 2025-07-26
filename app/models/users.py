@@ -1,5 +1,6 @@
 from app.config.database import Base
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from datetime import datetime
 
 class User(Base):
@@ -17,3 +18,4 @@ class User(Base):
     date_joined = Column(String(length=255), nullable=False, default=datetime.utcnow().isoformat()+ 'Z')
     birth_date = Column(String(length=255), nullable=True)
     
+    owned_books = relationship("BookOwner", back_populates="user")

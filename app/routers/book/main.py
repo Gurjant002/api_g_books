@@ -42,7 +42,7 @@ async def get_book(book_id: int):
 
 @router.get("/owned-books", tags=["Books"], description="Get book owned by the user")
 async def get_owned_books(token: str = Depends(oauth2_scheme)):
-  response = query_books(token=token)
+  response = query_books(email=token)
   return response
 
 @router.post("/upload-cover", tags=["Books"], description="Upload a book cover")
