@@ -17,6 +17,7 @@ class BookSchemaWithOwner(BaseModel):
     Config:
         from_attributes (bool): Enables attribute-based population of the schema.
     """
+    
     title: str
     author: str
     published_year: int | None

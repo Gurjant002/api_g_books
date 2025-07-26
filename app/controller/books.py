@@ -81,9 +81,9 @@ def query_books(id: int = None, email: str = None) -> list[BookSchemaWithOwner] 
       raise HTTPException(status_code=404, detail="User not found")
     try:
       books = db.query(BookModel).join(BookOwnerModel).filter(BookOwnerModel.owner_id == user.id).all()
-      response: list[BookSchemaWithOwner] = []
+      response: list[ReturnBookSchema] = []
       for book in books:
-          book_with_owner = BookSchemaWithOwner.from_orm(book)
+          book_with_owner = ReturnBookSchema.from_orm(book)
           book_with_owner.owner_id = user.id
           response.append(book_with_owner)
       return response
