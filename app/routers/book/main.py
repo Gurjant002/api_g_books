@@ -1,7 +1,8 @@
 import os
 from fastapi import APIRouter, HTTPException, UploadFile, Depends
 import shutil
-from app.schemas.book import BookSchemaWithOwner, ReturnBookSchema
+from app.schemas.book import ReturnBookSchema
+from app.schemas.user_book import BookSchemaWithOwner
 from app.controller.books import add_new_book, query_books
 from app.controller.users import oauth2_scheme
 
@@ -24,7 +25,7 @@ async def new_books(books: list[BookSchemaWithOwner]):
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/get-all-books", tags=["Books"], response_model=list[ReturnBookSchema], description="Get all books")
+@router.get("/get-all-books", tags=["Books"], response_model=list[ReturnBookSchema | BookSchemaWithOwner], description="Get all books")
 async def get_all_books():
   try:
     response = query_books()

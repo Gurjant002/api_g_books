@@ -1,8 +1,32 @@
 from fastapi import HTTPException
-from app.controller.users import query_users
-from app.models.books import Book as BookModel, BookOwner as BookOwnerModel, ReadedBook as ReadedBookModel
-from app.schemas.book import BookSchema, BookSchemaWithOwner, ReturnBookSchema, OwnerBookSchema
 from app.config.database import Session
+from app.models.books import Book as BookModel, BookOwner as BookOwnerModel, ReadedBook as ReadedBookModel
+from app.models.users import User
+from app.schemas.book import BookSchema, ReturnBookSchema, OwnerBookSchema
+from app.schemas.user import NonSensitiveUserSchema
+from app.schemas.user_book import BookSchemaWithOwner
+from app.controller.users import query_users
+
+def get_parse_bookModel_bookSchemaOwner(books: BookModel, user: User) -> BookSchemaWithOwner:
+  """
+  Parses the BookSchemaWithOwner to ensure it has the correct structure.
+  """
+  if isinstance(user, User):
+    user = NonSensitiveUserSchema.from_orm(user)
+  return BookSchemaWithOwner(
+      id=books.id,
+      title=books.title,
+      author=books.author,
+      published_year=books.published_year,
+      isbn=books.isbn,
+      pages=books.pages,
+      cover=books.cover,
+      language=books.language,
+      available=books.available,
+      owner_id=user.id,
+      owner=user,
+      date_added=books.date_added
+  )
 
 def get_parse_book(book: BookSchemaWithOwner) -> BookSchema:
   book_data: BookSchema = BookSchema(
@@ -99,7 +123,20 @@ def query_books(id: int = None, email: str = None) -> list[BookSchemaWithOwner] 
     response = ReturnBookSchema.from_orm(book)
     return response
   
-  books = db.query(BookModel).all()
+  # books = db.query(BookModel).all()
+  books = db.query(
+    BookModel,
+    User
+  ).select_from(BookModel).join(
+    BookOwnerModel, BookModel.id == BookOwnerModel.book_id
+  ).join(
+    User, BookOwnerModel.owner_id == User.id
+  ).all()
   db.close()
-  response = [ReturnBookSchema.from_orm(book) for book in books]
+  
+  response = []
+  for book, user in books:
+    book_with_owner = get_parse_bookModel_bookSchemaOwner(book, user)
+    response.append(book_with_owner)
+  
   return response

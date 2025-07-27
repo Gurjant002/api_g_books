@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from app.schemas.book import BookSchemaWithOwner
 
 class SensitiveUserSchema(BaseModel):
     id: int
@@ -19,6 +18,18 @@ class SensitiveUserSchema(BaseModel):
         from_attributes=True
 
 class NonSensitiveUserSchema(BaseModel):
+    """
+    Schema representing a user with non-sensitive information.
+    Attributes:
+        id (int): Unique identifier of the user.
+        username (str): Username of the user.
+        email (str): Email address of the user.
+        first_name (str): First name of the user.
+        last_name (str): Last name of the user.
+        is_active (bool): Indicates whether the user account is active.
+        date_joined (str): Date when the user joined, in ISO format.
+        birth_date (str): User's birth date, in ISO format.
+    """
     id: int
     username: str
     email: str
@@ -50,12 +61,3 @@ class UserLoginSchema(BaseModel):
     username: str | None
     email: str | None
     password: str
-
-class UserBookSchema(BaseModel):
-    user: NonSensitiveUserSchema
-    readed_books: list[BookSchemaWithOwner]
-    rented_books: list[BookSchemaWithOwner]
-
-    class Config:
-        # orm_mode = True
-        from_attributes=True
