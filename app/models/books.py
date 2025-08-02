@@ -98,3 +98,31 @@ class ReadedBook(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Assuming user_id is an integer
     start = Column(String, nullable=True)  # Assuming start is a string in ISO format
     end = Column(String, nullable=True)  # Assuming end is a string in ISO format
+
+class BookedBook(Base):
+    """
+    Modelo de datos para el seguimiento de libros que un usuario ha marcado como leídos.
+    
+    Esta clase representa la tabla 'booked_books' que registra qué libros
+    han sido marcados como leídos por los usuarios, junto con las fechas
+    de inicio y finalización de la lectura.
+    
+    Attributes:
+        id (int): Identificador único del registro de libro leído (clave primaria)
+        book_id (int): ID del libro leído (referencia a la tabla books)
+        user_id (int): ID del usuario que leyó el libro (referencia a la tabla users)
+        start (str): Fecha de inicio de la lectura (formato ISO string, opcional)
+        end (str): Fecha de finalización de la lectura (formato ISO string, opcional)
+    
+    Note:
+        Esta tabla permite llevar un registro detallado de los libros leídos
+        por cada usuario, facilitando el seguimiento del progreso y las
+        estadísticas de lectura.
+    """
+    __tablename__ = 'booked_books'
+
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Assuming user_id is an integer
+    start = Column(String, nullable=True)  # Assuming start is a string in ISO format
+    end = Column(String, nullable=True)  # Assuming end is a string in ISO format

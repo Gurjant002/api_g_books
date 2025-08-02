@@ -125,47 +125,52 @@ def login(user: OAuth2PasswordRequestForm, db: SQLSession) -> NonSensitiveUserSc
 
 def query_users(id: int = None, token: str = None, email: str = None, sensitive: bool = False) -> list[NonSensitiveUserSchema] | list[SensitiveUserSchema] | NonSensitiveUserSchema | SensitiveUserSchema:
     db = Session()
-    if id is not None:
-        user = db.query(UserModel).filter(UserModel.id == id).first()
-        db.close()
-        if not user:
-            return None
-        if not sensitive:
-            response = NonSensitiveUserSchema.from_orm(user)
-        else:
-            response = SensitiveUserSchema.from_orm(user)
-        return response
+    try:
+        if id is not None:
+            user = db.query(UserModel).filter(UserModel.id == id).first()
+            if not user:
+                return None
+            if not sensitive:
+                response = NonSensitiveUserSchema.from_orm(user)
+            else:
+                response = SensitiveUserSchema.from_orm(user)
+            db.close()
+            return response
 
-    if email is not None:
-        user = db.query(UserModel).filter(UserModel.email == email).first()
-        db.close()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        if not sensitive:
-            response = NonSensitiveUserSchema.from_orm(user)
-        else:
-            response = SensitiveUserSchema.from_orm(user)
-        return response
+        if email is not None:
+            user = db.query(UserModel).filter(UserModel.email == email).first()
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            if not sensitive:
+                response = NonSensitiveUserSchema.from_orm(user)
+            else:
+                response = SensitiveUserSchema.from_orm(user)
+            db.close()
+            return response
 
-    if token is not None:
-        user_email = getEmailFromToken(token)
-        user = db.query(UserModel).filter(UserModel.email == user_email).first()
-        db.close()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        if not sensitive:
-            response = NonSensitiveUserSchema.from_orm(user)
-        else:
-            response = SensitiveUserSchema.from_orm(user)
-        return response
+        if token is not None:
+            user_email = getEmailFromToken(token)
+            user = db.query(UserModel).filter(UserModel.email == user_email).first()
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            if not sensitive:
+                response = NonSensitiveUserSchema.from_orm(user)
+            else:
+                response = SensitiveUserSchema.from_orm(user)
+            db.close()
+            return response
 
-    users = db.query(UserModel).all()
-    db.close()
-    if not sensitive:
-        response = [NonSensitiveUserSchema.from_orm(user) for user in users]
-    else:
-        response = [SensitiveUserSchema.from_orm(user) for user in users]
-    return response
+        users = db.query(UserModel).all()
+        if not sensitive:
+            response = [NonSensitiveUserSchema.from_orm(user) for user in users]
+        else:
+            response = [SensitiveUserSchema.from_orm(user) for user in users]
+        db.close()
+        return response
+    except Exception as e:
+        raise e
+    finally:
+        db.close()
 
 def getEmailFromToken(token: str) -> str:
     try:

@@ -34,12 +34,16 @@ async def get_all_books():
     print(f"Error fetching books: {e}")
     raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/get-book/{book_id}", tags=["Books"], response_model=ReturnBookSchema, description="Get a book by ID")
+@router.get("/get-book/{book_id}", tags=["Books"], response_model=ReturnBookSchema | BookSchemaWithOwner, description="Get a book by ID")
 async def get_book(book_id: int):
-  response = query_books(id=book_id)
-  if not response:
-    raise HTTPException(status_code=404, detail="Book not found")
-  return response
+  try:
+    response = query_books(id=book_id)
+    if not response:
+      raise HTTPException(status_code=404, detail="Book not found")
+    return response
+  except Exception as e:
+    print(f"Error fetching book with ID {book_id}: {e}")
+    raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/owned-books", tags=["Books"], description="Get book owned by the user")
 async def get_owned_books(token: str = Depends(oauth2_scheme)):

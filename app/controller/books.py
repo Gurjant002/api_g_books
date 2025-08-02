@@ -117,13 +117,16 @@ def query_books(id: int = None, email: str = None) -> list[BookSchemaWithOwner] 
 
   if id:
     book = db.query(BookModel).filter(BookModel.id == id).first()
-    db.close()
     if not book:
+      db.close()
       raise HTTPException(status_code=404, detail="Book not found")
-    response = ReturnBookSchema.from_orm(book)
+    
+    owner_id = db.query(BookOwnerModel).filter(BookOwnerModel.book_id == id).first()
+    owner = query_users(id=owner_id.owner_id, sensitive=False)
+
+    response = get_parse_bookModel_bookSchemaOwner(book, owner)
     return response
-  
-  # books = db.query(BookModel).all()
+
   books = db.query(
     BookModel,
     User
