@@ -95,15 +95,32 @@ def add_new_book(book: BookSchemaWithOwner = None, books: list[BookSchemaWithOwn
     raise ValueError("Either book or books must be provided")
   return response
 
-def query_books(id: int = None, email: str = None) -> list[BookSchemaWithOwner] | ReturnBookSchema:
+def query_books(id: int = None, email: str = None, borrowed: bool = None) -> list[BookSchemaWithOwner] | ReturnBookSchema:
   db = Session()
-  if email:
-    # Assuming email is used to filter books by owner
-    user = query_users(email=email, sensitive=False)
-    if not user:
-      db.close()
-      raise HTTPException(status_code=404, detail="User not found")
-    try:
+  try:
+    if borrowed:
+      if not email:
+        raise HTTPException(status_code=400, detail="Email is required to query borrowed books")
+      user = query_users(email=email, sensitive=False)
+      
+      if not user:
+        db.close()
+        raise HTTPException(status_code=404, detail="User not found")
+      
+      book_owners = db.query(BookOwnerModel).filter(BookOwnerModel.owner_id == user.id).all()
+      books = [db.query(BookModel).filter(BookModel.id == bo.book_id).first() for bo in book_owners]
+      response: list[ReturnBookSchema] = []
+      for book in books:
+          book_with_owner = ReturnBookSchema.from_orm(book)
+          book_with_owner.owner_id = user.id
+          response.append(book_with_owner)
+      return response
+
+    if email:
+      user = query_users(email=email, sensitive=False)
+      if not user:
+        db.close()
+        raise HTTPException(status_code=404, detail="User not found")
       books = db.query(BookModel).join(BookOwnerModel).filter(BookOwnerModel.owner_id == user.id).all()
       response: list[ReturnBookSchema] = []
       for book in books:
@@ -111,35 +128,36 @@ def query_books(id: int = None, email: str = None) -> list[BookSchemaWithOwner] 
           book_with_owner.owner_id = user.id
           response.append(book_with_owner)
       return response
-    except Exception as e:
-      db.close()
-      raise HTTPException(status_code=500, detail=str(e))
 
-  if id:
-    book = db.query(BookModel).filter(BookModel.id == id).first()
-    if not book:
-      db.close()
-      raise HTTPException(status_code=404, detail="Book not found")
+    if id:
+      book = db.query(BookModel).filter(BookModel.id == id).first()
+      if not book:
+        db.close()
+        raise HTTPException(status_code=404, detail="Book not found")
+      
+      owner_id = db.query(BookOwnerModel).filter(BookOwnerModel.book_id == id).first()
+      owner = query_users(id=owner_id.owner_id, sensitive=False)
+
+      response = get_parse_bookModel_bookSchemaOwner(book, owner)
+      return response
+
+    books = db.query(
+      BookModel,
+      User
+    ).select_from(BookModel).join(
+      BookOwnerModel, BookModel.id == BookOwnerModel.book_id
+    ).join(
+      User, BookOwnerModel.owner_id == User.id
+    ).all()
+    db.close()
     
-    owner_id = db.query(BookOwnerModel).filter(BookOwnerModel.book_id == id).first()
-    owner = query_users(id=owner_id.owner_id, sensitive=False)
-
-    response = get_parse_bookModel_bookSchemaOwner(book, owner)
+    response = []
+    for book, user in books:
+      book_with_owner = get_parse_bookModel_bookSchemaOwner(book, user)
+      response.append(book_with_owner)
+    
     return response
-
-  books = db.query(
-    BookModel,
-    User
-  ).select_from(BookModel).join(
-    BookOwnerModel, BookModel.id == BookOwnerModel.book_id
-  ).join(
-    User, BookOwnerModel.owner_id == User.id
-  ).all()
-  db.close()
-  
-  response = []
-  for book, user in books:
-    book_with_owner = get_parse_bookModel_bookSchemaOwner(book, user)
-    response.append(book_with_owner)
-  
-  return response
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
+  finally:
+    db.close()

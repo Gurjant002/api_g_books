@@ -50,7 +50,12 @@ async def get_owned_books(token: str = Depends(oauth2_scheme)):
   response = query_books(email=token)
   return response
 
-@router.post("/upload-cover", tags=["Books"], description="Upload a book cover")
+@router.get("/borrowed-books", tags=["Books"], description="Get books borrowed by the user")
+async def get_borrowed_books(token: str = Depends(oauth2_scheme)):
+  response = query_books(email=token, borrowed=True)
+  return response
+
+""" @router.post("/upload-cover", tags=["Books"], description="Upload a book cover")
 async def upload_cover(file: UploadFile, description: str = None):
   # Here you would typically save the file to a directory or cloud storage
   # For demonstration, we'll just return the filename and content type
@@ -68,6 +73,6 @@ async def upload_cover(file: UploadFile, description: str = None):
 async def get_book_cover(book_id: str):
   # This function would typically query the database for the book cover path
   # For demonstration, we'll just return a static path
-  return f"static/book_covers/{book_id}.jpg"
+  return f"static/book_covers/{book_id}.jpg" """
 
 
