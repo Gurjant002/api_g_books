@@ -9,9 +9,9 @@ APP_ROOT = Path(__file__).resolve().parent
 
 def get_app() -> FastAPI:
     app = FastAPI(
-        title="API Rasoi",
+        title="G-BOOKS API",
         version="v1",
-        description="API created to manage orders in a restaurant.",
+        description="API created for managing a collection of punjabi books.",
         docs_url="/",
         # default_response_class=UJSONResponse,
     )
