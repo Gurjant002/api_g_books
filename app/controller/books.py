@@ -1,35 +1,42 @@
 from fastapi import HTTPException
+
 from app.config.database import Session
-from app.models.books import Book as BookModel, BookOwner as BookOwnerModel, ReadedBook as ReadedBookModel
+
+# @TODO: Eliminar estos imports si no se usan
+from app.service.book import BookService
+from app.models.books import Book as BookModel, BookOwner as BookOwnerModel, BorrowedBook
 from app.models.users import User
+
 from app.schemas.book import BookSchema, ReturnBookSchema, OwnerBookSchema
 from app.schemas.user import NonSensitiveUserSchema
 from app.schemas.user_book import BookSchemaWithOwner
+
 from app.controller.users import query_users
 
-def get_parse_bookModel_bookSchemaOwner(books: BookModel, user: User) -> BookSchemaWithOwner:
-  """
-  Parses the BookSchemaWithOwner to ensure it has the correct structure.
-  """
-  if isinstance(user, User):
-    user = NonSensitiveUserSchema.from_orm(user)
-  return BookSchemaWithOwner(
-      id=books.id,
-      title=books.title,
-      author=books.author,
-      published_year=books.published_year,
-      isbn=books.isbn,
-      pages=books.pages,
-      cover=books.cover,
-      language=books.language,
-      available=books.available,
-      owner_id=user.id,
-      owner=user,
-      date_added=books.date_added
-  )
+class BookController:
+  def __init__(self):
+    self.bookService = BookService()
 
-def get_parse_book(book: BookSchemaWithOwner) -> BookSchema:
-  book_data: BookSchema = BookSchema(
+  def query_books(self):
+    books = self.bookService.query_books_with_owner()
+    response = []
+    for book, user in books:
+      book_with_owner = self._parse_book_with_owner(book, user)
+      response.append(book_with_owner)
+    return response
+
+  def query_book_by_id(self, book_id: int) -> BookSchemaWithOwner:
+    book = self.bookService.query_book_by_id(book_id)
+    
+
+  def _parse_book_with_owner(self, book: BookModel, user: User) -> BookSchemaWithOwner:
+    """
+    Parses a BookModel and its owner User into a BookSchemaWithOwner.
+    """
+    if isinstance(user, User):
+      user = NonSensitiveUserSchema.from_orm(user)
+    return BookSchemaWithOwner(
+      id=book.id,
       title=book.title,
       author=book.author,
       published_year=book.published_year,
@@ -38,15 +45,51 @@ def get_parse_book(book: BookSchemaWithOwner) -> BookSchema:
       cover=book.cover,
       language=book.language,
       available=book.available,
+      owner_id=user.id,
+      owner=user,
       date_added=book.date_added
+    )
+
+def get_parse_bookModel_bookSchemaOwner(books: BookModel, user: User) -> BookSchemaWithOwner:
+  """
+  Parses the BookSchemaWithOwner to ensure it has the correct structure.
+  """
+  if isinstance(user, User):
+    user = NonSensitiveUserSchema.from_orm(user)
+  return BookSchemaWithOwner(
+    id=books.id,
+    title=books.title,
+    author=books.author,
+    published_year=books.published_year,
+    isbn=books.isbn,
+    pages=books.pages,
+    cover=books.cover,
+    language=books.language,
+    available=books.available,
+    owner_id=user.id,
+    owner=user,
+    date_added=books.date_added
+  )
+
+def get_parse_book(book: BookSchemaWithOwner) -> BookSchema:
+  book_data: BookSchema = BookSchema(
+    title=book.title,
+    author=book.author,
+    published_year=book.published_year,
+    isbn=book.isbn,
+    pages=book.pages,
+    cover=book.cover,
+    language=book.language,
+    available=book.available,
+    date_added=book.date_added
   )
   return book_data
 
 def get_parse_book_owner(book: BookSchemaWithOwner, book_id: int) -> OwnerBookSchema:
   book_owner: OwnerBookSchema = OwnerBookSchema(
-      book_id=book_id,
-      owner_id=book.owner_id,
-      date_added=book.date_added
+    book_id=book_id,
+    owner_id=book.owner_id,
+    date_added=book.date_added
   )
   return book_owner
 

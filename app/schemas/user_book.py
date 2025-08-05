@@ -32,17 +32,24 @@ class BookSchemaWithOwner(BaseModel):
     available: bool = True  # Default to True for availability
     owner_id: int | None = None  # Optional owner ID for book ownership
     owner: NonSensitiveUserSchema | None  # Optional owner information for book ownership
-    date_added: str | None = None  # Optional date added for the book
+    date_added: str | None = None  # Optional date: the date the book was added
 
     class Config:
         # orm_mode = True
         from_attributes=True
 
-class UserBookSchema(BaseModel):
-    user: NonSensitiveUserSchema
-    readed_books: list[BookSchemaWithOwner]
-    rented_books: list[BookSchemaWithOwner]
-
-    class Config:
-        # orm_mode = True
-        from_attributes=True
+class BorrowSchema(BaseModel):
+    """
+    Schema for representing a book borrowing record.
+    Attributes:
+        id (int): The unique identifier for the borrowing record.
+        book_id (int): The ID of the book being borrowed.
+        user_id (int): The ID of the user borrowing the book.
+        start (str): The start date of the borrowing period in ISO format.
+        end (str): The end date of the borrowing period in ISO format.
+    """
+    id: int
+    book_id: int
+    user_id: int
+    start: str  # Start date in ISO format
+    end: str  # End date in ISO format

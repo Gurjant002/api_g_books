@@ -8,12 +8,12 @@ from app.controller.users import oauth2_scheme
 
 router = APIRouter()
 
-@router.post("/add-book", tags=["Books"], response_model=BookSchemaWithOwner, description="Add a new book")
+""" @router.post("/add-book", tags=["Books"], response_model=BookSchemaWithOwner, description="Add a new book")
 async def new_book(book: BookSchemaWithOwner):
   if not book:
     raise HTTPException(status_code=400, detail="Book data is required")
   response = add_new_book(book)
-  return response
+  return response """
 
 @router.post("/add-books", tags=["Books"], response_model=BookSchemaWithOwner | str, description="Add a new book")
 async def new_books(books: list[BookSchemaWithOwner]):
