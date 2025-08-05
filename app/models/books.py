@@ -1,6 +1,7 @@
 from app.config.database import Base
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship
+from datetime import datetime, timedelta
 
 class Book(Base):
     """
@@ -124,5 +125,5 @@ class BookedBook(Base):
     id = Column(Integer, primary_key=True, index=True)
     book_id = Column(Integer, ForeignKey("books.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Assuming user_id is an integer
-    start = Column(String, nullable=True)  # Assuming start is a string in ISO format
-    end = Column(String, nullable=True)  # Assuming end is a string in ISO format
+    start = Column(String, nullable=False, default=datetime.now().isoformat())  # Assuming start is a string in ISO format
+    end = Column(String, nullable=False, default=(datetime.now() + timedelta(days=30)).isoformat())  # Assuming end is a string in ISO format
