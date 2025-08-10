@@ -27,7 +27,6 @@ class BookController:
 
   def query_book_by_id(self, book_id: int) -> BookSchemaWithOwner:
     book = self.bookService.query_book_by_id(book_id)
-    
 
   def _parse_book_with_owner(self, book: BookModel, user: User) -> BookSchemaWithOwner:
     """

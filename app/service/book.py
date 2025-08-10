@@ -9,12 +9,18 @@ from app.models.books import (
 from app.models.users import User as UserModel
 
 class BookService:
-  def query_books():
+  def query_books(self):
     with get_db() as db:
       books = db.query(BookModel).all()
       return books
   
-  def query_books_with_owner() -> list:
+  def query_books_with_owner(self) -> list:
+    """
+    Queries the database to retrieve a list of books along with their respective owners.
+
+    Returns:
+      list: A list of tuples, where each tuple contains a BookModel instance and the corresponding UserModel instance representing the owner.
+    """
     with get_db() as db:
       books = db.query(
         BookModel,

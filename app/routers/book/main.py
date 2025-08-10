@@ -3,10 +3,12 @@ from fastapi import APIRouter, HTTPException, UploadFile, Depends
 import shutil
 from app.schemas.book import ReturnBookSchema
 from app.schemas.user_book import BookSchemaWithOwner
-from app.controller.books import add_new_book, query_books
+
+from app.controller.books import add_new_book, query_books, BookController
 from app.controller.users import oauth2_scheme
 
 router = APIRouter()
+controller = BookController()
 
 """ @router.post("/add-book", tags=["Books"], response_model=BookSchemaWithOwner, description="Add a new book")
 async def new_book(book: BookSchemaWithOwner):
@@ -28,7 +30,7 @@ async def new_books(books: list[BookSchemaWithOwner]):
 @router.get("/get-all-books", tags=["Books"], response_model=list[ReturnBookSchema | BookSchemaWithOwner], description="Get all books")
 async def get_all_books():
   try:
-    response = query_books()
+    response = controller.query_books()
     return response
   except Exception as e:
     print(f"Error fetching books: {e}")
